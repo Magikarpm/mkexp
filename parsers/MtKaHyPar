@@ -67,6 +67,34 @@ match($0, /  cut.*= ([0-9]+)/, m) {
     data["Cut"] = m[1]
 }
 
+match($0, /  km1=*([0-9]+)/, m) {
+    data["KM1"] = m[1]
+}
+
+match($0, /  initial_km1=*([0-9]+)/, m) {
+    data["InitialKM1"] = m[1]
+}
+
+match($0, /  initial_cut=*([0-9]+)/, m) {
+    data["InitialCut"] = m[1]
+}
+
+match($0, /  initial_num_edges=*([0-9]+)/, m) {
+    data["InitialNumEdges"] = m[1]
+}
+
+match($0, /  initial_num_nodes=*([0-9]+)/, m) {
+    data["InitialNumNodes"] = m[1]
+}
+
+match($0, /  nr_multilevels:*([0-9]+)/, m) {
+    data["NumMultilevels"] = m[1]
+}
+
+match($0, /  total_e_weight_of_coarsest_graph:*([0-9]+)/, m) {
+    data["TotalEdgeWeightOfCoarsestGraph"] = m[1]
+}
+
 END {
     yield()
 }
@@ -76,12 +104,19 @@ function header() {
     printf "K,"
     printf "Seed,"
     printf "Cut,"
+    printf "KM1,"
     printf "Epsilon,"
     printf "Balance,"
     printf "Time,"
     printf "NumNodes,"
     printf "NumMPIsPerNode,"
     printf "NumThreadsPerMPI,"
+    printf "InitialKM1,"
+    printf "InitialCut,"
+    printf "InitialNumEdges,"
+    printf "InitialNumNodes,"
+    printf "NumMultilevels,"
+    printf "TotalEdgeWeightOfCoarsestGraph,"
     printf "Failed\n"
 }
 
@@ -92,12 +127,19 @@ function yield() {
     printf "%d,", data["K"]
     printf "%d,", data["Seed"]
     printf "%d,", data["Cut"]
+    printf "%d,", data["KM1"]
     printf "%f,", data["Epsilon"]
     printf "%f,", data["Balance"]
     printf "%f,", data["Time"]
     printf "%d,", data["NumNodes"]
     printf "%d,", data["NumMPIsPerNode"]
     printf "%d,", data["NumThreadsPerMPI"]
+    printf "%d,", data["InitialKM1"]
+    printf "%d,", data["InitialCut"]
+    printf "%d,", data["InitialNumEdges"]
+    printf "%d,", data["InitialNumNodes"]
+    printf "%d,", data["NumMultilevels"]
+    printf "%d,", data["TotalEdgeWeightOfCoarsestGraph"]
     printf "%d\n", (data["Time"] == "")
 
     reset()
