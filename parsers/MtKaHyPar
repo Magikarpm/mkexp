@@ -67,32 +67,48 @@ match($0, /  cut.*= ([0-9]+)/, m) {
     data["Cut"] = m[1]
 }
 
-match($0, /  km1=*([0-9]+)/, m) {
+match($0, /  km1.*= ([0-9]+)/, m) {
     data["KM1"] = m[1]
 }
 
-match($0, /  initial_km1=*([0-9]+)/, m) {
+match($0, /.*initial_km1=([0-9]+)/, m) {
     data["InitialKM1"] = m[1]
 }
 
-match($0, /  initial_cut=*([0-9]+)/, m) {
+match($0, /.*initial_cut=([0-9]+)/, m) {
     data["InitialCut"] = m[1]
 }
 
-match($0, /  initial_num_edges=*([0-9]+)/, m) {
+match($0, /.*initial_num_edges=([0-9]+)/, m) {
     data["InitialNumEdges"] = m[1]
 }
 
-match($0, /  initial_num_nodes=*([0-9]+)/, m) {
+match($0, /.*initial_num_nodes=([0-9]+)/, m) {
     data["InitialNumNodes"] = m[1]
 }
 
-match($0, /  nr_multilevels:*([0-9]+)/, m) {
+match($0, /.*nr_multilevels=([0-9]+)/, m) {
     data["NumMultilevels"] = m[1]
 }
 
-match($0, /  total_e_weight_of_coarsest_graph:*([0-9]+)/, m) {
+match($0, /.*total_e_weight_of_coarsest_graph=([0-9]+)/, m) {
     data["TotalEdgeWeightOfCoarsestGraph"] = m[1]
+}
+
+match($0, /.*level_2_numHEs=([0-9]+)/, m) {
+    data["Level2NumHEs"] = m[1]
+}
+
+match($0, /.*level_2_numHNs=([0-9]+)/, m) {
+    data["Level2NumHNs"] = m[1]
+}
+
+match($0, /.*level_2_avgHESize=([0-9]+\.[0-9]+)/, m) {
+    data["Level2AvgHESize"] = m[1]
+}
+
+match($0, /.*level_2_avgHEWeight=([0-9]+\.[0-9]+)/, m) {
+    data["Level2AvgHEWeight"] = m[1]
 }
 
 END {
@@ -117,6 +133,10 @@ function header() {
     printf "InitialNumNodes,"
     printf "NumMultilevels,"
     printf "TotalEdgeWeightOfCoarsestGraph,"
+    printf "Level2NumHEs,"
+    printf "Level2NumHNs,"
+    printf "Level2AvgHESize,"
+    printf "Level2AvgHEWeight,"
     printf "Failed\n"
 }
 
@@ -140,6 +160,10 @@ function yield() {
     printf "%d,", data["InitialNumNodes"]
     printf "%d,", data["NumMultilevels"]
     printf "%d,", data["TotalEdgeWeightOfCoarsestGraph"]
+    printf "%d,", data["Level2NumHEs"]
+    printf "%d,", data["Level2NumHNs"]
+    printf "%f,", data["Level2AvgHESize"]
+    printf "%f,", data["Level2AvgHEWeight"]
     printf "%d\n", (data["Time"] == "")
 
     reset()

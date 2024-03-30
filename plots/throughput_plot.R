@@ -1,7 +1,6 @@
 source("texify_graph_names.R")
 
-create_throughput_plot <- function(...,
-                                   primary_key = c("Graph", "K"),
+create_throughput_plot <- function(primary_key = c("Graph", "K"),
                                    column.graph = "Graph",
                                    column.algorithm = "Algorithm",
                                    column.time = "AvgTime",
@@ -13,14 +12,15 @@ create_throughput_plot <- function(...,
                                    colors = c(),
                                    namer = texify_graph_names_smallk,
                                    tex = FALSE,
-                                   tiny = FALSE) {
+                                   tiny = FALSE,
+                                   ...) {
   all_datasets <- list(...)
   stopifnot(length(all_datasets) > 0)
 
   # Sort by primary key
-  for (dataset in all_datasets) {
-    dataset <- dataset %>% dplyr::arrange_at(primary_key)
-  }
+  #for (dataset in all_datasets) {
+  #  dataset <- dataset %>% dplyr::arrange_at(primary_key)
+  #}
 
   # Check for consistent data
   first_dataset <- all_datasets[[1]]

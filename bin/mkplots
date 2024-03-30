@@ -71,7 +71,7 @@ gmean_running_times <- data.frame(Algorithm = factor(), Time = numeric())
 for (algorithm in algorithms) {
   df <- load_data(algorithm, paste0(getwd(), "/results/", algorithm, ".csv"))
   df <- df %>%
-    dplyr::mutate(Algorithm = paste0(Algorithm, "-", NumThreadsPerMPI))
+    dplyr::mutate(Algorithm = paste0(Algorithm))
 
   df <- merge(df, graphs_db, by = "Graph", all.x = TRUE)
 
@@ -81,10 +81,10 @@ for (algorithm in algorithms) {
       dplyr::filter(NumThreadsPerMPI == thread_config) 
 
     gmean_running_times <- gmean_running_times |>
-      rbind(data.frame(
-        Algorithm = factor(paste0(algorithm, "-", thread_config)),
-        Time = mean(subdf$AvgTime)
-      ))
+        rbind(data.frame(
+            Algorithm = factor(paste0(algorithm, "-", thread_config)),
+            Time = exp(mean(log(subdf$AvgTime)))
+        ))
     data <- append(data, list(subdf))
   }
 }
@@ -127,25 +127,54 @@ if (!generate_per_instance_fm_batches && !generate_fm_batches) {
     }
 }
 
+for (i in 1:length(data)) {
+    data[[i]] <- data[[i]] %>% dplyr::mutate(Algorithm = factor(Algorithm, levels = algorithms))
+}
+
+configs <- list(
+    c("All Graphs", "*"), 
+    c("Class Regular", "reg.*"),
+    c("Class Irregular", "irreg.*"),
+    c("Class Random", "irreg.*.random"),
+    c("Class Social", "*.social"),
+    c("Class Web", "*.web"),
+    c("Class Road", "*.road"),
+    c("Class Miscellaneous", "irreg.*.misc")
+    )
 
 # Performance profile containing all algorithms
 if (generate_all_cut) {
-    pdf("all_cut.pdf")
-    all_pp <- do.call(create_performance_profile, data) +
+    pdf("all_km1&ikm1.pdf")
+    for (i in 1:length(configs)) {
+        config <- configs[[i]]
+        tmp <- data
+        tmp <- lapply(tmp, \(df) df %>% dplyr::filter(grepl(config[2], Graph)))
+        num_filtered_graphs <- length(unique(tmp[[1]]$Graph))
+    all_pp <- do.call(create_performance_profile, c(data, column.objective = "AvgCut", pattern = config[2])) +
         theme_bw() +
         create_theme() +
-        ggtitle(paste0(num_unique_graphs, " unique graphs with k={", paste(ks, collapse = ", "), "}"))
+        ggtitle(paste0(config[1], ": Connectivity Metric for ", num_filtered_graphs, " unique graphs"))
     print(all_pp)
+        all_pp <- do.call(create_performance_profile, c(data, column.objective = "AvgIKM1", pattern = config[2])) +
+        theme_bw() +
+        create_theme() +
+        ggtitle(paste0(config[1], ": Initial Connectivity Metric for ", num_filtered_graphs, " unique graphs"))
+    print(all_pp)
+    }
     dev.off()
 }
 
 # Pairwise performance profiles
 if (generate_pairwise_cut) {
-    pdf("pairwise_cut.pdf")
+    pdf("pairwise_km1.pdf")
     algorithm_indices <- 1:(length(algorithms) - 1)
+    config <- c("Class Irregular", "irreg.*")
+    tmp <- data
+    tmp <- lapply(tmp, \(df) df %>% dplyr::filter(grepl(config[2], Graph)))
+    num_filtered_graphs <- length(unique(tmp[[1]]$Graph))
     for (i in 1:(length(algorithms) - 1)) {
         for (j in (i + 1):length(algorithms)) {
-            pp <- create_performance_profile(data[[i]], data[[j]]) +
+            pp <- create_performance_profile(tmp[[i]], tmp[[j]], column.objective = "AvgCut") +
                 theme_bw() +
                 create_theme() +
                 ggtitle(paste0(num_unique_graphs, " unique graphs with k={", paste(ks, collapse = ", "), "}"))
@@ -158,10 +187,17 @@ if (generate_pairwise_cut) {
 # Running time boxplots
 if (generate_all_time) {
     pdf("all_time.pdf")
-    args <- data
-    args[["annotation"]] <- gmean_running_times
-    all_bp <- do.call(create_running_time_boxplot, args) + theme_bw() + create_theme()
-    print(all_bp)
+    for (i in 1:length(configs)) {
+        config <- configs[[i]]
+        tmp <- data
+        tmp <- lapply(tmp, \(df) df %>% dplyr::filter(grepl(config[2], Graph)))
+    #    tmp[["annotation"]] <- gmean_running_times
+        all_bp <- do.call(create_running_time_boxplot, c(tmp, show_average = TRUE)) + 
+        theme_bw() + 
+        create_theme() + 
+        ggtitle(paste0(config[1], ": Average running times"))
+        print(all_bp)
+    } 
     dev.off()
 }
 

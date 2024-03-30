@@ -20,6 +20,10 @@ weakscaling_aggregator <- function(df) {
   data.frame(
     MinCut = empty_min(df$Cut),
     AvgCut = mean(df$Cut, na.rm = TRUE),
+    MinKM1 = empty_min(df$KM1),
+    AvgKM1 = mean(df$KM1, na.rm = TRUE),
+    MinIKM1 = empty_min(df$InitialKM1),
+    AvgIKM1 = mean(df$InitialKM1, na.rm = TRUE),
     MinTime = empty_min(df$Time),
     AvgTime = mean(df$Time, na.rm = TRUE),
     MinBalance = empty_min(df$Balance),
@@ -69,11 +73,13 @@ aggregate_data <- function(df, timelimit, aggregator, ignore_first_seed = FALSE)
     additional_cols <- c(additional_cols, "BatchesSize")
   }
 
-  vars <- colnames(df)
-  vars <- vars[! vars %in% c("Cut", "Balance", "Time", "Failed", "Timeout", "Seed")]
-  #df <- ddply(df, c("Algorithm", "Graph", "K", "Epsilon", "NumPEs", "NumNodes", "NumMPIsPerNode", "NumThreadsPerMPI", additional_cols), aggregator)
-  df <- ddply(df, vars, aggregator)
-
+  #vars <- colnames(df)
+  #vars <- vars[! vars %in% c("Cut", "Balance", "Time", "Failed", "Timeout", "Seed")]
+  df <- ddply(df, c("Algorithm", "Graph", "K", "Epsilon", "NumPEs", "NumNodes", "NumMPIsPerNode", "NumThreadsPerMPI", additional_cols), aggregator)
+  cat(nrow(df), "\n")
+  #df <- ddply(df, vars, aggregator)
+  cat(nrow(df), "\n")
+  
   df <- df %>%
     dplyr::mutate(AvgCut = ifelse(is.na(AvgCut), Inf, AvgCut)) %>%
     dplyr::mutate(MinCut = ifelse(is.na(MinCut), Inf, MinCut)) %>%

@@ -20,18 +20,19 @@ create_running_time_boxplot <- function(...,
                                         label.pdf.timeout = "timeout",
                                         label.pdf.infeasible = "infeasible",
                                         label.pdf.failed = "failed",
-                                        colors = c(),
+                                        colors = c('#1b9e77','#d95f02','#7570b3','#e7298a','#66a61e','#e6ab02','#a6761d'),
                                         levels = c(),
                                         annotation = data.frame(),
+                                        show_average = FALSE,
                                         position.y = "left",
                                         tiny = FALSE) {
   all_datasets <- list(...)
   stopifnot(length(all_datasets) > 0)
 
   # Sort by primary key
-  for (dataset in all_datasets) {
-    dataset <- dataset %>% dplyr::arrange_at(primary_key)
-  }
+  #for (dataset in all_datasets) {
+  #  dataset <- dataset %>% dplyr::arrange_at(primary_key)
+  #}
 
   # Check for consistent data
   first_dataset <- all_datasets[[1]]
@@ -132,8 +133,18 @@ create_running_time_boxplot <- function(...,
     p <- p + geom_hline(yintercept = 10^(max_time_log10 + tick.errors.space_below / 2))
   }
 
-  if (nrow(annotation) > 0) {
-    p <- p + geom_text(aes(x = Algorithm, label = sprintf("%.1f", Time), vjust = -0.5), y = -Inf, annotation, size = 2.5)
+  #if (nrow(annotation) > 0) {
+  #  p <- p + geom_text(aes(x = Algorithm, label = sprintf("%.1f", Time), vjust = -0.5), y = -Inf, annotation, size = 2.5)
+  #}
+
+  if (show_average) {
+    g_mean_rt <- pp_data %>%
+      dplyr::filter(!Timeout & !Infeasible & !Failed) %>%
+      dplyr::group_by(Algorithm) %>%
+      dplyr::summarize(MeanTime = mean(Time, na.rm = TRUE)) %>%
+      dplyr::arrange(MeanTime) %>%
+      dplyr::mutate(Algorithm = factor(Algorithm, levels = Algorithm))
+      p <- p + geom_text(aes(x = Algorithm, y = 10^(max_time_log10 + 0.5), label = sprintf("%.1f", MeanTime)), g_mean_rt, size = 2.5)
   }
 
   # Set colors

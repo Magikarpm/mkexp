@@ -2,7 +2,7 @@
 source("common.R")
 
 create_performance_profile <- function(...,
-                                       column.objective = "AvgCut",
+                                       column.objective = "AvgKM1",
                                        column.algorithm = "Algorithm",
                                        column.timeout = "Timeout",
                                        column.infeasible = "Infeasible",
@@ -38,15 +38,19 @@ create_performance_profile <- function(...,
                                        label.pdf.timeout = "timeout",
                                        label.pdf.infeasible = "infeasible",
                                        label.pdf.failed = "failed",
-                                       colors = c(),
-                                       tiny = FALSE) {
+                                       colors = c('#1b9e77','#d95f02','#7570b3','#e7298a','#66a61e','#e6ab02','#a6761d', '#666666'),
+                                       tiny = FALSE,
+                                       pattern = "*") {
   all_datasets <- list(...)
   stopifnot(length(all_datasets) > 0)
 
+  # Filter datasets
+  all_datasets <- lapply(all_datasets, \(df) df %>% dplyr::filter(grepl(pattern, Graph)))
+
   # Sort by primary key
-  for (dataset in all_datasets) {
-    dataset <- dataset %>% dplyr::arrange_at(primary_key)
-  }
+  #for (dataset in all_datasets) {
+  #  dataset <- dataset %>% dplyr::arrange_at(primary_key)
+  #}
 
   # Check for consistent data
   first_dataset <- all_datasets[[1]]
@@ -57,13 +61,14 @@ create_performance_profile <- function(...,
     stopifnot(column.infeasible %in% colnames(dataset))
     stopifnot(!(NA %in% dataset[[column.objective]]))
     stopifnot(!(-Inf %in% dataset[[column.objective]]))
-    stopifnot(!(0 %in% dataset[[column.objective]]))
+    #stopifnot(!(0 %in% dataset[[column.objective]]))
     stopifnot(nrow(dataset) == nrow(first_dataset))
     stopifnot(dataset[, primary_key] == first_dataset[, primary_key])
   }
 
   # Compute performance profile ratios
   best <- do.call(pmin, lapply(all_datasets, \(df) df[[column.objective]]))
+  best <- ifelse(best == 0, Inf, best)
   all_ratios <- lapply(all_datasets, \(df) df[[column.objective]] / best)
 
   # Compute performance profile rates
@@ -112,17 +117,17 @@ create_performance_profile <- function(...,
 
   # Map errors (infeasible, timeout, failed)
   map_errors <- function(vals) {
-    sapply(vals, \(val) if (val == PSEUDO_RATIO_TIMEOUT) {
-      2
-    } else if (val == PSEUDO_RATIO_INFEASIBLE) {
-      1
-    } else if (val == PSEUDO_RATIO_FAILED) {
-      1
-    } else if (val == Inf) {
-      2
-    } else {
+  #  sapply(vals, \(val) if (val == PSEUDO_RATIO_TIMEOUT) {
+  #    2
+  #  } else if (val == PSEUDO_RATIO_INFEASIBLE) {
+  #    1
+  #  } else if (val == PSEUDO_RATIO_FAILED) {
+  #    1
+  #  } else if (val == Inf) {
+  #    2
+  #  } else {
       0
-    })
+  #  })
   }
   pp_data <- pp_data %>%
     dplyr::mutate(Transformed = ifelse(Transformed == 0 & Ratio >= from, 1, Transformed)) %>%
@@ -131,7 +136,7 @@ create_performance_profile <- function(...,
       Ratio
     )) %>%
     dplyr::mutate(Transformed = ifelse(Transformed == 1, 2, Transformed))
-  stopifnot(pp_data %>% dplyr::filter(Transformed != 2) %>% nrow() == 0)
+  #stopifnot(pp_data %>% dplyr::filter(Transformed != 2) %>% nrow() == 0)
 
   # Generate x axis breaks and labels
   x_breaks <- c()
@@ -160,7 +165,7 @@ create_performance_profile <- function(...,
   p <- ggplot(pp_data, aes(x = Ratio, y = Fraction, color = Algorithm)) +
     scale_x_continuous(expand = c(0, 0.01), breaks = x_breaks, labels = x_labels) +
     scale_y_continuous(limits = c(0, 1), expand = c(0, 0.01), breaks = seq(0.0, 1.0, by = 0.1), labels = y_labels) +
-    geom_step(linewidth = 1.5)
+    geom_step(linewidth = 0.75)
 
   x <- 0
   for (segment in segments) {
