@@ -71,14 +71,6 @@ effectivenessTestDataFrame <- function(num_virtual_instances,
                                               createVirtualInstance(instance_algo_2, total_time_algo_2, total_time_algo_1))    
           }   
         }
-        #print(paste(colnames(virtual_instances_algo_1), "|" , virtual_instances_algo_1))
-        #algorithms <- commandArgs(trailingOnly = TRUE)
-        #for(algorithm in algorithms) {
-        #  virtual_instances_algo_1 <- virtual_instances_algo_1 %>%
-        #  dplyr::mutate(Algorithm = paste0(Algorithm))
-        #  virtual_instances_algo_2 <- virtual_instances_algo_2 %>%
-        #  dplyr::mutate(Algorithm = paste0(Algorithm))
-        #}
         virtual_instances_algo_1$Algorithm <- algo_name_1
         virtual_instances_algo_2$Algorithm <- algo_name_2
         virtual_instances_algo_1$NumPEs <- 1
