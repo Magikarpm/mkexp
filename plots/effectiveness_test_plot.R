@@ -48,9 +48,6 @@ effectivenessTestDataFrame <- function(num_virtual_instances,
         virtual_instances_algo_2 <- sample_n(instance_algo_2, 1)
         total_time_algo_1 <- virtual_instances_algo_1$Time[[1]]
         total_time_algo_2 <- virtual_instances_algo_2$Time[[1]]            
-        #print("hi")
-        #print(paste(colnames(instance_algo_1), "|" , instance_algo_1, instance_algo_2, "|", total_time_algo_1, total_time_algo_2))
-        #quit()
         instance_algo_1 <- removeSeed(instance_algo_1, virtual_instances_algo_1$Seed[[1]])
         instance_algo_2 <- removeSeed(instance_algo_2, virtual_instances_algo_2$Seed[[1]])
         if ( total_time_algo_1 < total_time_algo_2 ) {
