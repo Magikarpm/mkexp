@@ -12,23 +12,23 @@ create_performance_profile <- function(...,
                                          list(
                                            trans = "identity",
                                            to = 1.1,
-                                           width = 3,
-                                           breaks = seq(1.0, 1.1, by = 0.01),
-                                           labels = c("1.0", "", "", "", "", "1.05", "", "", "", "", "1.1")
+                                           width = 5,
+                                           breaks = c(1.0, 1.05, 1.1),
+                                           labels = c("1.0", "1.05", "1.1")
                                          ),
                                          list(
                                            trans = "identity",
                                            to = 2,
-                                           width = 2,
-                                           breaks = c(1.25, 1.5, 1.75, 2),
-                                           labels = c("", "1.5", "", "2")
+                                           width = 3,
+                                           breaks = c(1.4, 1.7, 2),
+                                           labels = c("1.4", "1.7", "2")
                                          ),
                                          list(
                                            trans = "log10",
-                                           to = 100,
-                                           width = 1,
-                                           breaks = c(10, 100),
-                                           labels = c("10^1", "10^2")
+                                           to = 3.25,
+                                           width = 2,
+                                           breaks = c(3),
+                                           labels = c("3")
                                          )
                                        ),
                                        segment.errors.width = 1,
@@ -160,17 +160,17 @@ create_performance_profile <- function(...,
   x_labels <- c(x_labels, c(label.pdf.infeasible, label.pdf.timeout))
 
   # Draw plot
-  y_labels <- if (tiny) c("0.0", "", "0.2", "", "0.4", "", "0.6", "", "0.8", "", "1.0") else seq(0.0, 1.0, by = 0.1)
+  y_labels <- if (tiny) c("0.0", "0.2", "0.4", "0.6", "0.8", "1.0") else seq(0.0, 1.0, by = 0.2)
 
-  p <- ggplot(pp_data, aes(x = Ratio, y = Fraction, color = Algorithm)) +
-    scale_x_continuous(expand = c(0, 0.01), breaks = x_breaks, labels = x_labels) +
-    scale_y_continuous(limits = c(0, 1), expand = c(0, 0.01), breaks = seq(0.0, 1.0, by = 0.1), labels = y_labels) +
-    geom_step(linewidth = 0.75)
+  p <- ggplot(pp_data, aes(x = Ratio, y = Fraction, color = Algorithm), cex) +
+    scale_x_continuous(expand = c(0, 0.1), breaks = x_breaks, labels = x_labels, minor_breaks = seq(0, 1.1, 0.01)) +
+    scale_y_continuous(limits = c(0, 1), expand = c(0, 0.015), breaks = seq(0.0, 1.0, by = 0.2), labels = y_labels) +
+    geom_step(linewidth = 2) + xlab("performance ratio") + ylab("fraction of instances")
 
   x <- 0
   for (segment in segments) {
     x <- x + segment$width
-    p <- p + geom_vline(xintercept = x)
+    p <- p + geom_vline(xintercept = x, linewidth = 1.0)
   }
 
   # Set colors

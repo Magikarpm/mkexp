@@ -1,7 +1,7 @@
 # options(show.error.locations = TRUE)
 # options(error = traceback)
 
-DEPS <- c("ggplot2", "plyr", "dplyr", "RColorBrewer", "gridExtra", "egg")
+DEPS <- c("ggplot2", "plyr", "dplyr", "RColorBrewer", "gridExtra", "egg", "foreach", "doParallel")
 for (dep in DEPS) {
   if (!require(dep, character.only = TRUE, warn.conflicts = FALSE)) {
     install.packages(dep)
@@ -34,7 +34,7 @@ weakscaling_aggregator <- function(df) {
   )
 }
 
-aggregate_data <- function(df, timelimit, aggregator, ignore_first_seed = FALSE) {
+aggregate <- function(df, timelimit, aggregator, ignore_first_seed = FALSE) {
   if (!("Timeout" %in% colnames(df))) {
     df$Timeout <- FALSE
   }
@@ -146,7 +146,11 @@ load_data <- function(name, file, seed = 0) {
   df$NumPEs <- df$NumNodes * df$NumMPIsPerNode * df$NumThreadsPerMPI
   df$Algorithm <- name
 
-  df <- aggregate_data(df, 3600, weakscaling_aggregator)
+  return(df)
+}
+
+aggregate_data <- function(df) {
+  df <- aggregate(df, 3600, weakscaling_aggregator)
 
   return(df %>% dplyr::arrange(Graph, K))
 }
